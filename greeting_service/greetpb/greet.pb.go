@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.25.0-devel
 // 	protoc        v3.12.3
-// source: greet/greetpb/greet.proto
+// source: greeting_service/greetpb/greeting_service.proto
 
 package greetpb
 
@@ -104,9 +104,9 @@ func RegisterDummyServiceServer(s *grpc.Server, srv DummyServiceServer) {
 }
 
 var _DummyService_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "greet.DummyService",
+	ServiceName: "greeting_service.DummyService",
 	HandlerType: (*DummyServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams:     []grpc.StreamDesc{},
-	Metadata:    "greet/greetpb/greet.proto",
+	Metadata:    "greeting_service/greetpb/greeting_service.proto",
 }
