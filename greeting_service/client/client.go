@@ -36,3 +36,5 @@ func doUnary(c greetpb.DummyServiceClient){
 	}
 	log.Printf("Response from greeting: %v\n", resp)
 }
+
+

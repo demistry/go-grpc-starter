@@ -18,7 +18,17 @@ message GreetResponse{
   string greeting = 3;
 }
 
+message GreetManyTimesResponse{
+  bool status = 1;
+  string message = 2;
+  string greeting = 3;
+}
+
 
 service DummyService{
+  // Unary
   rpc Greet(GreetRequest) returns (GreetResponse);
+
+  //Server Streaming
+  rpc GreetManyTimesFromServer(GreetRequest) returns (stream GreetManyTimesResponse);
 }
