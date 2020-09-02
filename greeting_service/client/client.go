@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 )
 
@@ -19,7 +20,8 @@ func main(){
 	}
 	defer conn.Close()
 	c := greetpb.NewDummyServiceClient(conn)
-	doUnary(c)
+	doServerStreaming(c)
+	//doUnary(c)
 }
 
 func doUnary(c greetpb.DummyServiceClient){
@@ -37,4 +39,27 @@ func doUnary(c greetpb.DummyServiceClient){
 	log.Printf("Response from greeting: %v\n", resp)
 }
 
-
+func doServerStreaming(c greetpb.DummyServiceClient){
+	fmt.Println("Starting Server Streaming call")
+	greet := &greetpb.Greeting{
+		FirstName: "David",
+		LastName:  "Ilenwabor",
+		Age:       32,
+	}
+	request := greetpb.GreetRequest{Greeting: greet}
+	resStream, err := c.GreetManyTimesFromServer(context.Background(), &request)
+	if err != nil{
+		log.Fatalf("Could not call server to stream greeting, an error occured %v", err)
+	}
+	for {
+		msg, err := resStream.Recv()
+		if err == io.EOF{ //this error is returned when a stream closes
+			log.Printf("Streaming ended")
+			break
+		}
+		if err != nil{
+			log.Fatalf("Error while receiving stream %v", err)
+		}
+		log.Printf(msg.GetGreeting())
+	}
+}
