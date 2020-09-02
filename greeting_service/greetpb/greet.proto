@@ -3,4 +3,22 @@ syntax = "proto3";
 package greet;
 option go_package="greeting_service/greetpb";
 
-service DummyService{}
+message Greeting{
+  string first_name = 1;
+  string last_name = 2;
+  int32 age = 3;
+}
+message GreetRequest{
+  Greeting greeting = 1;
+}
+
+message GreetResponse{
+  bool status = 1;
+  string message = 2;
+  string greeting = 3;
+}
+
+
+service DummyService{
+  rpc Greet(GreetRequest) returns (GreetResponse);
+}
