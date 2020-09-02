@@ -3,6 +3,7 @@ package main
 import (
 	"GoGRPCTest/greeting_service/greetpb"
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"log"
 )
@@ -18,6 +19,11 @@ func main(){
 	}
 	defer conn.Close()
 	c := greetpb.NewDummyServiceClient(conn)
+	doUnary(c)
+}
+
+func doUnary(c greetpb.DummyServiceClient){
+	fmt.Println("Starting Unary call")
 	greet := &greetpb.Greeting{
 		FirstName: "David",
 		LastName:  "Ilenwabor",
