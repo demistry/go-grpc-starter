@@ -19,8 +19,16 @@ type server struct {
 }
 
 func (s server) Greet(ctx context.Context, request *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
-
-	return nil, nil
+	firstName := request.GetGreeting().FirstName
+	lastName := request.GetGreeting().LastName
+	age := request.GetGreeting().Age
+	greeting := fmt.Sprintf("Hello %s %s, you are %d years old",firstName,lastName, age)
+	response := &greetpb.GreetResponse{
+		Status: true,
+		Message:  "Successfully returned greet response",
+		Greeting: greeting,
+	}
+	return response, nil
 }
 
 func main(){

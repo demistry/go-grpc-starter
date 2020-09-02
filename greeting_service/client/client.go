@@ -2,19 +2,31 @@ package main
 
 import (
 	"GoGRPCTest/greeting_service/greetpb"
-	"fmt"
+	"context"
 	"google.golang.org/grpc"
 	"log"
 )
 
+const PORT = "50051"
 func main(){
 
 
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure()) //to disable SSL, disable in production apps
+	//initializing withInsecure to disable SSL certification since it isnt needed, disable in production apps
+	conn, err := grpc.Dial("localhost:" + PORT, grpc.WithInsecure())
 	if err != nil{
-		log.Fatal("Could not connect to server %v", err)
+		log.Fatalf("Could not connect to server %v", err)
 	}
 	defer conn.Close()
 	c := greetpb.NewDummyServiceClient(conn)
-	fmt.Println("Created client %f ", c)
+	greet := &greetpb.Greeting{
+		FirstName: "David",
+		LastName:  "Ilenwabor",
+		Age:       32,
+	}
+	request := greetpb.GreetRequest{Greeting: greet}
+	resp, err := c.Greet(context.Background(), &request)
+	if err != nil{
+		log.Fatalf("Could not receive greeting, an error occured %v", err)
+	}
+	log.Printf("Response from greeting: %v\n", resp)
 }
