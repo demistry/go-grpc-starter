@@ -20,6 +20,21 @@ type server struct {
 
 }
 
+func main(){
+
+	lis, err := net.Listen("tcp", TcpAddress + PORT)
+	if err != nil{
+		log.Fatal("Could not initialize listener due to ", err.Error())
+	}
+	fmt.Println("Running server on port: 50051")
+	s := grpc.NewServer()
+	greetpb.RegisterDummyServiceServer(s, &server{})
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("Failed to start server %v", err)
+	}
+}
+
 func (s server) Greet(ctx context.Context, request *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
 	firstName := request.GetGreeting().FirstName
 	lastName := request.GetGreeting().LastName
@@ -80,17 +95,28 @@ func (s server) LongGreetFromClient(stream greetpb.DummyService_LongGreetFromCli
 	return nil
 }
 
-func main(){
-
-	lis, err := net.Listen("tcp", TcpAddress + PORT)
-	if err != nil{
-		log.Fatal("Could not initialize listener due to ", err.Error())
-	}
-	fmt.Println("Running server on port: 50051")
-	s := grpc.NewServer()
-	greetpb.RegisterDummyServiceServer(s, &server{})
-
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Failed to start server %v", err)
+func (s server) BidirectionalGreeting(stream greetpb.DummyService_BidirectionalGreetingServer) error {
+	fmt.Printf("Bidi Streaming request started\n")
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF{
+			return nil
+		}
+		if err != nil{
+			return err
+		}
+		firstName := req.GetGreeting().FirstName
+		lastName := req.GetGreeting().LastName
+		age := req.GetGreeting().Age
+		response := &greetpb.GreetResponse{
+			Status:   false,
+			Message:  "Received stream",
+			Greeting: fmt.Sprintf("Hello %s %s, you are %d years old", firstName, lastName, age),
+		}
+		if err := stream.Send(response); err != nil{
+			log.Println("Error while sending data to client %v", err)
+			return err
+		}
 	}
 }
+
