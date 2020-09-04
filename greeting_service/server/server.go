@@ -114,7 +114,7 @@ func (s server) BidirectionalGreeting(stream greetpb.DummyService_BidirectionalG
 			Greeting: fmt.Sprintf("Hello %s %s, you are %d years old", firstName, lastName, age),
 		}
 		if err := stream.Send(response); err != nil{
-			log.Println("Error while sending data to client %v", err)
+			log.Printf("Error while sending data to client %v\n", err)
 			return err
 		}
 	}

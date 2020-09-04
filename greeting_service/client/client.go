@@ -128,15 +128,17 @@ func doBidiStreaming(c greetpb.DummyServiceClient){
 
 		go func() {
 			//goroutine for receiving messages
-			response, err := stream.Recv()
-			if err == io.EOF{
-				close(waitingChannel)
+			for {
+				response, err := stream.Recv()
+				if err == io.EOF{
+					break
+				}
+				if err != nil{
+					log.Fatalf("Error while receiving stream data from server %v", err)
+				}
+				fmt.Printf("Received stream message from server %v\n",response.GetGreeting())
 			}
-			if err != nil{
-				close(waitingChannel)
-				log.Fatalf("Error while receiving stream data from server %v", err)
-			}
-			fmt.Printf("Received stream message from server %v\n",response.GetGreeting())
+			close(waitingChannel)
 		}()
 		<- waitingChannel
 	}
