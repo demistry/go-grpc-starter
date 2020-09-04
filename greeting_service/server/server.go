@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 	"net"
 	"time"
@@ -46,6 +47,35 @@ func (s server) GreetManyTimesFromServer(request *greetpb.GreetRequest, stream g
 		}
 		_ = stream.Send(response)
 		time.Sleep(1000 * time.Millisecond)
+	}
+	return nil
+}
+
+
+func (s server) LongGreetFromClient(stream greetpb.DummyService_LongGreetFromClientServer) error {
+	fmt.Printf("Client stream received on server\n")
+	greeting := ""
+	numOfStreams := 0
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF{
+			//client finished streaming
+			return stream.SendAndClose(&greetpb.GreetResponse{
+				Status: true,
+				Message:  "Successfully received all client streams",
+				Greeting: greeting,
+			})
+		}
+
+		if err != nil{
+			log.Fatalf("Error occured with streaming from client %v", err)
+		}
+
+		firstName := req.GetGreeting().FirstName
+		lastName := req.GetGreeting().LastName
+		age := req.GetGreeting().Age
+		numOfStreams += 1
+		greeting += fmt.Sprintf("Hello %s %s, you are %d years old. Total streams received %d", firstName, lastName, age, numOfStreams)
 	}
 	return nil
 }

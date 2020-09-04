@@ -24,6 +24,7 @@ func main(){
 	//doUnary(c)
 }
 
+//Unary RPC call
 func doUnary(c greetpb.DummyServiceClient){
 	fmt.Println("Starting Unary call")
 	greet := &greetpb.Greeting{
@@ -39,6 +40,7 @@ func doUnary(c greetpb.DummyServiceClient){
 	log.Printf("Response from greeting: %v\n", resp)
 }
 
+//Server streaming RPC call
 func doServerStreaming(c greetpb.DummyServiceClient){
 	fmt.Println("Starting Server Streaming call")
 	greet := &greetpb.Greeting{
