@@ -10,7 +10,25 @@ import (
 	"time"
 )
 
+
 const PORT = "50051"
+var requests = []*greetpb.GreetRequest{
+	&greetpb.GreetRequest{Greeting: &greetpb.Greeting{
+		FirstName: "David",
+		LastName:  "Ilenwabor",
+		Age:       50,
+	}},
+	&greetpb.GreetRequest{Greeting: &greetpb.Greeting{
+		FirstName: "David",
+		LastName:  "Oshioke",
+		Age:       100,
+	}},
+	&greetpb.GreetRequest{Greeting: &greetpb.Greeting{
+		FirstName: "Davidemi",
+		LastName:  "Ilenz",
+		Age:       25,
+	}},
+}
 func main(){
 
 
@@ -23,8 +41,8 @@ func main(){
 	c := greetpb.NewDummyServiceClient(conn)
 	//doUnary(c)
 	//doServerStreaming(c)
-	doClientStreaming(c)
-
+	//doClientStreaming(c)
+	doBidiStreaming(c)
 }
 
 //Unary RPC call
@@ -72,23 +90,6 @@ func doServerStreaming(c greetpb.DummyServiceClient){
 func doClientStreaming(c greetpb.DummyServiceClient){
 	fmt.Println("Starting client streaming call")
 
-	requests := []*greetpb.GreetRequest{
-		&greetpb.GreetRequest{Greeting: &greetpb.Greeting{
-			FirstName: "David",
-			LastName:  "Ilenwabor",
-			Age:       50,
-		}},
-		&greetpb.GreetRequest{Greeting: &greetpb.Greeting{
-			FirstName: "David",
-			LastName:  "Oshioke",
-			Age:       100,
-		}},
-		&greetpb.GreetRequest{Greeting: &greetpb.Greeting{
-			FirstName: "Davidemi",
-			LastName:  "Ilenz",
-			Age:       25,
-		}},
-	}
 	stream,err := c.LongGreetFromClient(context.Background()) //since its a stream, you dont need to pass in the request here
 	if err != nil{
 		log.Fatalf("Error occured with client streaming %v", err)
@@ -96,12 +97,48 @@ func doClientStreaming(c greetpb.DummyServiceClient){
 	for _,req := range requests {
 		fmt.Printf("Sending request %v\n", req)
 		stream.Send(req)
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 	}
 
 	res, err := stream.CloseAndRecv()
 	if err != nil{
 		log.Fatalf("Error while receiving response after streaming %v", err)
 	}
-	log.Printf("Response received for client streaming is %v", res)
+	log.Printf("Response received for client streaming is %v", res.GetGreeting())
+}
+
+func doBidiStreaming(c greetpb.DummyServiceClient){
+	fmt.Println("Starting Bidi streaming")
+
+	if stream, err := c.BidirectionalGreeting(context.Background()); err != nil{
+		log.Fatalf("Error in creating bidirectional stream %v",err)
+	} else{
+		waitingChannel := make(chan struct{})
+		go func(){
+			//goroutine for sending messages
+			for _,req := range requests{
+				fmt.Printf("Sending message %v\n", req)
+				if err := stream.Send(req); err != nil{
+					log.Fatalf("Error with sending request stream is %v", err)
+				}
+				time.Sleep(1000 * time.Millisecond)
+			}
+			_ = stream.CloseSend()
+		}()
+
+		go func() {
+			//goroutine for receiving messages
+			response, err := stream.Recv()
+			if err == io.EOF{
+				close(waitingChannel)
+			}
+			if err != nil{
+				close(waitingChannel)
+				log.Fatalf("Error while receiving stream data from server %v", err)
+			}
+			fmt.Printf("Received stream message from server %v\n",response.GetGreeting())
+		}()
+		<- waitingChannel
+	}
+
 }
