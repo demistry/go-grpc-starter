@@ -63,7 +63,7 @@ func (s server) LongGreetFromClient(stream greetpb.DummyService_LongGreetFromCli
 			return stream.SendAndClose(&greetpb.GreetResponse{
 				Status: true,
 				Message:  "Successfully received all client streams",
-				Greeting: greeting,
+				Greeting: fmt.Sprintf("%s Total streams received %d", greeting, numOfStreams),
 			})
 		}
 
@@ -75,7 +75,7 @@ func (s server) LongGreetFromClient(stream greetpb.DummyService_LongGreetFromCli
 		lastName := req.GetGreeting().LastName
 		age := req.GetGreeting().Age
 		numOfStreams += 1
-		greeting += fmt.Sprintf("Hello %s %s, you are %d years old. Total streams received %d", firstName, lastName, age, numOfStreams)
+		greeting += fmt.Sprintf("Hello %s %s, you are %d years old! ", firstName, lastName, age)
 	}
 	return nil
 }
