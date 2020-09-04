@@ -32,5 +32,9 @@ service DummyService{
   //Server Streaming
   rpc GreetManyTimesFromServer(GreetRequest) returns (stream GreetManyTimesResponse);
 
+  //Client Streaming
   rpc LongGreetFromClient(stream GreetRequest) returns (GreetResponse);
+
+  //Bidirectional Streaming
+  rpc BidirectionalGreeting(stream GreetRequest) returns (stream GreetResponse);
 }
